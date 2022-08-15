@@ -9,19 +9,20 @@ def PbFuzzyClustering(data, Nc, m, iter_limit):
         # calcular os pesos do cluster
         # reajustar os protótipos
     
-    Nc      = data.shape[1]
+    Nxy     = data.shape[1]
     Nd      = data.shape[0]
     Nb0     = int(Nd/Nc)
     dtb0    = [(Nb0*i,Nb0*i+1) for i in range(Nc)]
     weights = np.ones(Nc, Nd) # Vetor de pesos Protótipos x Pontos
     dist    = np.ones(Nc, Nd) # Vetor de distâncias Protótipos x Pontos
-    betas   = np.array([])
+    betas   = np.empty((Nc,Nxy))
+
+    i=0
     for di in dtb0:
-        dt      = np.concatenate((data[di[0]],data[di[1]]),axis=0)
-        betas   = np.append(betas,np.array(__nbeta(dt,weights,m)),axis=0)
-    
-    for i in range(Nd):
-        dist[:i] = betas[:0]-data[:0]*np.cos(betas[:1])-data[:1]*np.sin(betas[:1])
+        dt       = np.array([data[di[0],:],data[di[1],:]])
+        wt       = np.array([[1,1]])
+        betas[i] = np.array(__nbeta(dt,wt,m))
+        i=+1
     
     iL = 0
     lim = 1
@@ -49,13 +50,16 @@ def __weightFuzzy(data, tx, ty, dist, betai, betas, m): # Função que atribui o
         
     return d
 
+## Calculadora dos novos protótipos
+
 def __nbeta(data, wF, m):
     tx,ty,Sxx,Syy,Sxy = __estatistics(data, wF, m)
-    alpi = np.arctan(-2*Sxy/(Syy-Sxx))/2
-    rhoi = tx*np.cos(alpi)+ty*np.sin(alpi)
+    alp = np.arctan(np.divide(-2*Sxy,(Syy-Sxx),out=np.ones_like(Syy-Sxx)*np.inf,where=(Syy-Sxx)!=0))/2
+    rho = tx*np.cos(alp)+ty*np.sin(alp)
     
-    return (rhoi,alpi)
-
+    return np.array([[i,c] for i, c in zip(rho,alp)])
+    
+    
 def __distance(data,betai):
     d = betai[0]-data[0]*np.cos(betai[1])-data[1]*np.sin(betai[1])
     return d
