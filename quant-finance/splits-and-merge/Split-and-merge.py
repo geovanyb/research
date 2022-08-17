@@ -27,15 +27,14 @@ def PbFuzzyClustering(data, Nc, m, iter_limit):
     iL = 0
     lim = 1
     while lim:
-        # Cálculo dos novos pesos a partir das distâncias e estatísticas anteriores
-        Wf = __weightFuzzy(data,betai,g)
         # Cálculo das estatísticas com os novos pesos
         tx, ty, Sxx, Syy, Sxy = __estatistics(data,Wf,m)
+        # Cálculo dos novos pesos a partir das distâncias e estatísticas anteriores
+        Wf = __weightFuzzy(data,tx,ty,betas,m)
         # Cálculo dos novos betas a partir dos pesos e estatísticas
         betas = __nbeta(data,tx,ty,Sxx,Syy,Sxy)
-        # Cálculo das distâncias dos dados para os novos betas
-        for i in range(Nd):
-            dist[:i] = betas[:0]-data[:0]*np.cos(betas[:1])-data[:1]*np.sin(betas[:1])
+        
+     
         iL += 1
         if iL = iter_limit:
             lim = 0
